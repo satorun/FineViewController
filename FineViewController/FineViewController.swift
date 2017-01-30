@@ -10,27 +10,33 @@ import UIKit
 
 // FineViewControllerにする
 open class FineViewController: UIViewController {
-
-    ///// 表示
-    // Pushからアプリを起動して目的のviewとして表示されたとき
-    // Pushからアプリを前面に復帰して目的のviewとして表示されたとき
-    // 前面にいるときにPushをタップして目的のviewとして表示されたとき
-    // Pushからアプリを起動して目的のviewとしてではないが表示されたとき
-    // Pushからアプリを前面に復帰して目的のviewとしてではないが表示されたとき
-    // 前面にいるときにPushをタップして目的のviewとしてではないが表示されたとき
     
-    // アプリを前面に復帰して表示されたとき
-    // navigationVCにaddされたとき
-    // navigationVCが上のVCをpopして表示されたとき
-    // モーダルが閉じて表示されたとき
-    // モーダルで表示されたとき
-    // peekで表示されたとき
-    // popで表示されたとき
-    // キーボード、アラートを閉じて表示されたとき
+    public enum ShowTiming {
+        case firstTime
+        case normal // pushViewController, presenteViewController etc.
+        case fromBackground
+        case fromModalDismissing
+    }
     
+    public enum HideTiming {
+        case coverredWithModal
+        case normal // dismissViewController, popViewController etc.
+        case enterBackground
+    }
+    
+    // Override this method
+    open func viewDidShow(timing: ShowTiming) {
+        fatalError("Override this methos.")
+    }
+    
+    // Override this method
+    open func viewDidHide(timing: HideTiming) {
+        fatalError("Override this methos.")
+    }
     
     private var applicationWillEnterForeground = false
     private var hasPresentedViewController = false
+    private var hasBeenDisplayedOnce = false
     
     required public init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
@@ -38,48 +44,42 @@ open class FineViewController: UIViewController {
     
     override open func viewDidLoad() {
         super.viewDidLoad()
-        print("viewDidLoad")
+        hasBeenDisplayedOnce = false
     }
     
     override open func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        print("viewWillAppear")
         if presentedViewController != nil {
             hasPresentedViewController = true
         }
-        
-        print("presentationController: \(presentationController)")
-        print("presentedViewController: \(presentedViewController)")
-        print("presentingViewController: \(presentingViewController)")
     }
     
     override open func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         if hasPresentedViewController {
             hasPresentedViewController = false
-            print("viewDidAppearFromModalDismissing")
+            viewDidShow(timing: .fromModalDismissing)
+        } else if !hasBeenDisplayedOnce {
+            viewDidShow(timing: .firstTime)
         } else {
-            print("viewDidAppear")
+            viewDidShow(timing: .normal)
         }
-        
-        print("presentationController: \(presentationController)")
-        print("presentedViewController: \(presentedViewController)")
-        print("presentingViewController: \(presentingViewController)")
+        hasBeenDisplayedOnce = true
+
         addObservers()
     }
     
     override open func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        print("viewWillDisappear")
 
     }
     
     override open func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         if presentedViewController != nil {
-            print("viewDidDisappearFromModalPresenting")
+            viewDidHide(timing: .coverredWithModal)
         } else {
-            print("viewDidDisappear")
+            viewDidHide(timing: .normal)
         }
         removeObservers()
     }
@@ -90,12 +90,6 @@ open class FineViewController: UIViewController {
             selector: #selector(applicationDidBecomeActive(_:)),
             name: NSNotification.Name.UIApplicationDidBecomeActive,
             object: nil)
-        
-//        NotificationCenter.default.addObserver(
-//            self,
-//            selector: #selector(applicationWillResignActive(_:)),
-//            name: NSNotification.Name.UIApplicationWillResignActive,
-//            object: nil)
         
         NotificationCenter.default.addObserver(
             self,
@@ -117,22 +111,16 @@ open class FineViewController: UIViewController {
     func applicationDidBecomeActive(_ notification: Notification) {
         if applicationWillEnterForeground {
             applicationWillEnterForeground = false
-            print("applicationDidBecomeActiveFromBackground")
-        } else {
-            print("applicationDidBecomeActive")
+            viewDidShow(timing: .fromBackground)
         }
     }
     
-//    func applicationWillResignActive(_ notification: Notification) {
-//        print("applicationWillResignActive")
-//    }
-    
     func applicationWillEnterForeground(_ notification: Notification) {
-        print("applicationWillEnterForeground")
         applicationWillEnterForeground = true
     }
     
     func applicationDidEnterBackground(_ notification: Notification) {
-        print("applicationDidEnterBackground")
+        viewDidHide(timing: .enterBackground)
     }
 }
+

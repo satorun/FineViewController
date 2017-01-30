@@ -11,6 +11,14 @@ import FineViewController
 
 class ModalViewController: FineViewController {
     
+    override func viewDidShow(timing: FineViewController.ShowTiming) {
+        print("\(self) did show: \(timing)")
+    }
+    
+    override func viewDidHide(timing: FineViewController.HideTiming) {
+        print("\(self) did hide: \(timing)")
+    }
+    
     @IBAction func tappedReturnButton(_ sender: UIButton) {
         dismiss(animated: true, completion: nil)
     }
