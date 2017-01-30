@@ -25,12 +25,10 @@ open class FineViewController: UIViewController {
     
     // Override this method
     open func viewDidShow(timing: ShowTiming) {
-        fatalError("Override this methos.")
     }
     
     // Override this method
     open func viewDidHide(timing: HideTiming) {
-        fatalError("Override this methos.")
     }
     
     private var applicationWillEnterForeground = false
@@ -104,22 +102,29 @@ open class FineViewController: UIViewController {
     }
     
     func removeObservers() {
-        NotificationCenter.default.removeObserver(self)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIApplicationDidBecomeActive, object: nil)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIApplicationWillEnterForeground, object: nil)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIApplicationDidEnterBackground, object: nil)
     }
     
-    func applicationDidBecomeActive(_ notification: Notification) {
+    // Override this method if needed.
+    // Require to call super.
+    open func applicationDidBecomeActive(_ notification: Notification) {
         if applicationWillEnterForeground {
             applicationWillEnterForeground = false
             viewDidShow(timing: .fromBackground)
         }
     }
     
-    func applicationWillEnterForeground(_ notification: Notification) {
+    // Override this method if needed.
+    // Require to call super.
+    open func applicationWillEnterForeground(_ notification: Notification) {
         applicationWillEnterForeground = true
     }
     
-    func applicationDidEnterBackground(_ notification: Notification) {
+    // Override this method if needed.
+    // Require to call super.
+    open func applicationDidEnterBackground(_ notification: Notification) {
         viewDidHide(timing: .enterBackground)
     }
 }
-
