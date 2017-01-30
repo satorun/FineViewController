@@ -8,7 +8,6 @@
 
 import UIKit
 
-// FineViewControllerにする
 open class FineViewController: UIViewController {
     
     public enum ShowTiming {
